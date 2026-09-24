@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiquidCompute | The Compute Resource Exchange</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            background-color: #0d1117; 
+            color: #c9d1d9; 
+        }
+        .mono { 
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; 
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    
+    <!-- Navigation -->
+    <nav class="w-full p-6 flex justify-between items-center border-b border-gray-800">
+        <div class="text-2xl font-bold text-white tracking-tight">LiquidCompute<span class="text-blue-500">.dev</span></div>
+        <a href="#waitlist" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md font-medium transition-colors">Early Access</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="flex-grow flex flex-col items-center justify-center text-center px-4 py-20">
+        <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-6">
+            The Spot Market for <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Compute</span>
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-400 max-w-2xl mb-12">
+            A real-time matching engine for hardware allocation. Trade H100 clusters, instances, and bare metal at pure market value.
+        </p>
+
+        <!-- Mock Order Book Visual -->
+        <div class="bg-[#161b22] border border-gray-700 rounded-lg p-6 w-full max-w-md shadow-2xl mb-12 text-left mono text-sm">
+            <div class="flex justify-between text-gray-500 mb-2 pb-2 border-b border-gray-700">
+                <span>Price ($/hr)</span>
+                <span>Size (Nodes)</span>
+            </div>
+            <!-- Asks (Red) -->
+            <div class="text-red-400 flex justify-between mb-1"><span>2.450</span><span>8</span></div>
+            <div class="text-red-400 flex justify-between mb-1"><span>2.445</span><span>12</span></div>
+            <div class="text-red-400 flex justify-between mb-3"><span>2.440</span><span>4</span></div>
+            
+            <!-- Spread -->
+            <div class="text-white flex justify-between font-bold text-lg mb-3 border-y border-gray-700 py-2">
+                <span>2.435</span>
+                <span class="text-gray-500 text-xs self-center">SPREAD 0.005</span>
+            </div>
+
+            <!-- Bids (Green) -->
+            <div class="text-green-400 flex justify-between mb-1"><span>2.435</span><span>16</span></div>
+            <div class="text-green-400 flex justify-between mb-1"><span>2.430</span><span>32</span></div>
+            <div class="text-green-400 flex justify-between"><span>2.425</span><span>8</span></div>
+        </div>
+
+        <!-- Waitlist Form -->
+        <div id="waitlist" class="w-full max-w-md">
+            <form class="flex gap-2" action="#" method="POST" onsubmit="alert('Waitlist joined!'); return false;">
+                <input type="email" placeholder="Enter your email to join the queue" required
+                    class="w-full px-4 py-3 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-md font-bold transition-colors">
+                    Submit
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full p-6 text-center text-gray-600 text-sm border-t border-gray-800">
+        &copy; 2026 LiquidCompute. Built for high-frequency resource allocation.
+    </footer>
+
+</body>
+</html>
