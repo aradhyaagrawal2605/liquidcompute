@@ -1,76 +1,1391 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LiquidCompute | The Compute Resource Exchange</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { 
-            background-color: #0d1117; 
-            color: #c9d1d9; 
-        }
-        .mono { 
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; 
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LiquidCompute — The spot market for compute</title>
+  <meta name="description" content="LiquidCompute is a spot market for GPU clusters, instances, and bare metal. Buyers and providers meet on a visible book.">
+  <meta name="theme-color" content="#090a0c">
+  <meta property="og:title" content="LiquidCompute — The spot market for compute">
+  <meta property="og:description" content="A real-time market for GPU clusters, instances, and bare metal. Capacity clears on a visible book.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect fill='%23090a0c' width='16' height='16'/%3E%3Crect x='1' y='2' width='10' height='2' fill='%23ff8b70'/%3E%3Crect x='1' y='6' width='6' height='2' fill='%23ff8b70'/%3E%3Crect x='1' y='10' width='13' height='2' fill='%23d6f25a'/%3E%3Crect x='1' y='13' width='8' height='2' fill='%23d6f25a'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090a0c;
+      --raised: #121418;
+      --line: #2a2d33;
+      --cream: #f3f0e8;
+      --muted: #c4beb2;
+      --faint: #aea89c;
+      --acid: #d6f25a;
+      --ask: #ff8b70;
+      --ink: #14160e;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+      --serif: "Instrument Serif", "Iowan Old Style", Palatino, Georgia, serif;
+      --sans: "Instrument Sans", "Avenir Next", "Segoe UI", sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+      --max: 1120px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--cream);
+      font-family: var(--sans);
+      font-size: 1.0625rem;
+      line-height: 1.5;
+      text-rendering: optimizeLegibility;
+      font-variant-numeric: tabular-nums;
+      overflow-x: clip;
+    }
+    ::selection { background: var(--acid); color: var(--ink); }
+    :focus-visible { outline: 2px solid var(--acid); outline-offset: 3px; }
+    [hidden] { display: none !important; }
+    button, input { font: inherit; color: inherit; }
+    p { color: var(--muted); line-height: 1.65; }
+    h1, h2, h3 { color: var(--cream); font-weight: 400; }
+    .container { width: min(var(--max), calc(100% - 2.5rem)); margin-inline: auto; }
+    section[id] { scroll-margin-top: 5.75rem; }
+
+    .skip {
+      position: absolute;
+      left: 1rem;
+      top: 0;
+      transform: translateY(-120%);
+      background: var(--acid);
+      color: var(--ink);
+      padding: 0.6rem 0.8rem;
+      z-index: 100;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .skip:focus { transform: none; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .banner {
+      background: var(--acid);
+      color: var(--ink);
+      text-align: center;
+      padding: 0.6rem 1rem;
+      font-size: 0.95rem;
+    }
+    .banner p { margin: 0; color: inherit; }
+    .banner a { color: inherit; font-weight: 600; text-underline-offset: 0.15em; }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(9, 10, 12, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 4.25rem;
+      gap: 1rem;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--cream);
+      text-decoration: none;
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      font-size: 1.05rem;
+      white-space: nowrap;
+    }
+    .logo .tld { color: var(--faint); font-weight: 400; }
+    .nav-links { display: none; gap: 1.5rem; align-items: center; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.95rem; }
+    .nav-links a:hover { color: var(--cream); }
+    .nav-actions { display: flex; align-items: center; gap: 0.45rem; flex: none; }
+    #mobile-nav:not([hidden]) { display: grid; padding-bottom: 0.4rem; }
+    #mobile-nav a {
+      text-decoration: none;
+      padding: 0.85rem 0;
+      border-top: 1px solid var(--line);
+      color: var(--cream);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border: 1px solid transparent;
+      padding: 0.85rem 1.1rem;
+      border-radius: 2px;
+      font-weight: 500;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .btn-primary { background: var(--acid); color: var(--ink); }
+    .btn-primary:hover { background: #e9ff8a; }
+    .btn-ghost { background: transparent; color: var(--cream); border-color: var(--line); }
+    .btn-ghost:hover { border-color: var(--cream); }
+    .btn-small { padding: 0.55rem 0.75rem; font-size: 0.9rem; }
+    .menu-btn {
+      background: transparent;
+      color: var(--cream);
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.7rem;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .menu-btn:hover { border-color: var(--cream); }
+
+    .hero {
+      position: relative;
+      padding: 3.25rem 0 4.25rem;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 42rem;
+      height: 42rem;
+      right: -6rem;
+      top: -14rem;
+      background: radial-gradient(circle, rgba(214, 242, 90, 0.08), transparent 62%);
+      pointer-events: none;
+    }
+    .hero .container { position: relative; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin: 0 0 1.35rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .dot {
+      width: 0.45rem;
+      height: 0.45rem;
+      border-radius: 50%;
+      background: var(--acid);
+      box-shadow: 0 0 0 0 rgba(214, 242, 90, 0.7);
+      animation: pulse 2.4s infinite;
+    }
+    @keyframes pulse {
+      70% { box-shadow: 0 0 0 7px rgba(214, 242, 90, 0); }
+    }
+    .hero-grid { display: grid; gap: 0 3.25rem; }
+    .hero-grid > * { min-width: 0; }
+    @media (max-width: 979px) {
+      .hero h1 { order: 1; }
+      .lede { order: 2; }
+      .cta-row { order: 3; }
+      .book { order: 4; }
+      .meta { order: 5; }
+    }
+    .hero h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(2.9rem, 4.7vw, 5.15rem);
+      line-height: 0.92;
+      letter-spacing: -0.035em;
+      margin: 0;
+    }
+    .hero h1 em { font-style: italic; }
+    .lede { margin: 1.15rem 0 0; max-width: 36rem; font-size: 1.125rem; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.6rem; }
+    .meta { margin: 2rem 0 0; }
+    .meta div {
+      display: grid;
+      grid-template-columns: 2.5rem 1fr;
+      gap: 0.75rem;
+      padding: 0.85rem 0;
+      border-top: 1px solid var(--line);
+    }
+    .meta dt {
+      margin: 0;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--acid);
+    }
+    .meta dd { margin: 0; color: var(--cream); }
+    .book { margin-top: 2.25rem; min-width: 0; }
+
+    @media (min-width: 980px) {
+      .nav-links { display: flex; }
+      .menu-btn, #mobile-nav { display: none !important; }
+      .hero-grid { grid-template-columns: 1.22fr 0.88fr; align-items: start; }
+      .hero h1, .lede, .cta-row, .meta { grid-column: 1; }
+      .hero h1 { grid-row: 1; }
+      .lede { grid-row: 2; }
+      .cta-row { grid-row: 3; }
+      .meta { grid-row: 4; }
+      .book { grid-column: 2; grid-row: 1 / span 4; margin-top: 0; align-self: start; }
+    }
+
+    .frame {
+      background: var(--raised);
+      border: 1px solid var(--line);
+      border-top: 2px solid var(--acid);
+      box-shadow: var(--shadow);
+      padding: 1rem 1rem 0.95rem;
+    }
+    .book-top { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+    .kicker-row { display: flex; align-items: center; gap: 0.75rem; }
+    .kicker {
+      margin: 0 0 0.75rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--acid);
+    }
+    .kicker-row .kicker { margin: 0; }
+    .contract-name {
+      font-family: var(--serif);
+      font-size: 1.85rem;
+      margin: 0.45rem 0 0.15rem;
+      line-height: 1;
+    }
+    .shape { margin: 0; color: var(--faint); font-size: 0.88rem; }
+    .quote { text-align: right; color: var(--acid); }
+    .spark { display: block; margin: 0 0 0.35rem auto; }
+    .spark.down { color: var(--ask); }
+    .last { margin: 0; font-family: var(--mono); font-size: 1.35rem; color: var(--cream); }
+    .chg { margin: 0.15rem 0 0; font-family: var(--mono); font-size: 0.75rem; }
+    .chg.up { color: var(--acid); }
+    .chg.down { color: var(--ask); }
+    .pause {
+      background: none;
+      border: 0;
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0;
+    }
+    .pause:hover { color: var(--cream); }
+    .tabs { display: flex; gap: 0.35rem; margin: 0.95rem 0 0.35rem; }
+    .tabs button {
+      flex: 1;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      padding: 0.42rem 0.2rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+    }
+    .tabs button[aria-selected="true"] {
+      background: var(--cream);
+      color: var(--ink);
+      border-color: var(--cream);
+    }
+    .tabs button:hover:not([aria-selected="true"]) { border-color: var(--muted); color: var(--cream); }
+    .cols, .level {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .cols {
+      padding: 0.45rem 0.2rem 0.35rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .side-label {
+      margin: 0.45rem 0 0.1rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .side-label.ask { color: var(--ask); }
+    .side-label.bid { color: var(--acid); }
+    .level {
+      position: relative;
+      padding: 0.28rem 0.2rem;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+    }
+    .level .bar {
+      position: absolute;
+      z-index: 0;
+      top: 1px;
+      bottom: 1px;
+      right: 0;
+      background: currentColor;
+      opacity: 0.16;
+      transition: width 0.45s ease;
+    }
+    .level .px, .level .size { position: relative; z-index: 1; }
+    .level .size { color: var(--cream); }
+    .asks .level { color: #f0b2a2; }
+    .bids .level { color: #d7e7a4; }
+    .asks .level.best { color: var(--ask); }
+    .bids .level.best { color: var(--acid); }
+    .spread {
+      display: flex;
+      justify-content: center;
+      margin: 0.3rem 0;
+      padding: 0.55rem 0.2rem;
+      border-block: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cream);
+    }
+    .prints { margin-top: 0.85rem; border-top: 1px solid var(--line); padding-top: 0.75rem; }
+    .prints .kicker { margin-bottom: 0.45rem; }
+    .prints ol { list-style: none; margin: 0; padding: 0; }
+    .prints li {
+      display: grid;
+      grid-template-columns: 4.7rem 2.5rem 2.2rem 1fr;
+      gap: 0.35rem;
+      padding: 0.16rem 0.15rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .prints .buy { color: var(--acid); }
+    .prints .sell { color: var(--ask); }
+    .prints .px { text-align: right; color: var(--cream); }
+    .prints li.new { animation: flash-buy 0.8s ease; }
+    .prints li.new-sell { animation: flash-sell 0.8s ease; }
+    @keyframes flash-buy { from { background: rgba(214, 242, 90, 0.16); } }
+    @keyframes flash-sell { from { background: rgba(255, 139, 112, 0.16); } }
+    .fine { margin: 0.75rem 0 0; color: var(--faint); font-size: 0.75rem; line-height: 1.45; }
+
+    .tape {
+      overflow: hidden;
+      border-block: 1px solid var(--line);
+      background: #0d0f12;
+      max-width: 100%;
+    }
+    .tape-track { display: flex; width: max-content; animation: tape 46s linear infinite; }
+    .tape:hover .tape-track { animation-play-state: paused; }
+    .tape-set { display: flex; }
+    .tape-set span {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.55rem;
+      padding: 0.72rem 1.15rem;
+      border-right: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .tape b { color: var(--cream); font-weight: 500; }
+    .tape i { font-style: normal; }
+    .up { color: var(--acid); }
+    .down { color: var(--ask); }
+    @keyframes tape { to { transform: translateX(-50%); } }
+
+    .section { padding: 5.5rem 0; }
+    .band { background: #0e1013; border-block: 1px solid var(--line); }
+    .section-head { max-width: 42rem; margin-bottom: 2.6rem; }
+    .section-head h2, .sticky-head h2, .access h2 {
+      font-family: var(--serif);
+      font-size: clamp(2.2rem, 4vw, 3.45rem);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      margin: 0 0 0.9rem;
+    }
+    .dek { margin: 0; font-size: 1.125rem; max-width: 40rem; }
+    .split { display: grid; gap: 2rem; }
+    .split > * { min-width: 0; }
+    .point { padding: 1.3rem 0; border-top: 1px solid var(--line); }
+    .point h3, .step h3 {
+      margin: 0 0 0.4rem;
+      font-family: var(--sans);
+      font-size: 1.2rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+    .point p { margin: 0; }
+    .table-title {
+      font-family: var(--serif);
+      font-size: 1.7rem;
+      margin: 2.2rem 0 0.9rem;
+    }
+    .table-wrap { overflow-x: auto; max-width: 100%; min-width: 0; border: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; }
+    .compare { min-width: 560px; }
+    .instruments { min-width: 720px; }
+    th, td {
+      text-align: left;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    thead th {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 500;
+      background: #101216;
+    }
+    tbody th { color: var(--cream); font-weight: 500; }
+    td { color: var(--muted); }
+    tr:last-child th, tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
+    .compare td:last-child, .compare th:last-child {
+      background: rgba(214, 242, 90, 0.07);
+      color: var(--cream);
+    }
+    .note { margin: 0.9rem 0 0; font-size: 0.95rem; }
+
+    .steps { border-bottom: 1px solid var(--line); }
+    .step {
+      display: grid;
+      gap: 0.35rem 1.5rem;
+      padding: 1.55rem 0;
+      border-top: 1px solid var(--line);
+    }
+    .step .num { margin: 0; font-family: var(--serif); font-size: 1.8rem; color: var(--acid); line-height: 1; }
+    .step p { margin: 0; }
+
+    .tickets { display: grid; gap: 1rem; }
+    .ticket, .receipt {
+      background: var(--raised);
+      border: 1px solid var(--line);
+      border-top-width: 2px;
+      padding: 1.15rem 1.2rem 1.25rem;
+    }
+    .ticket-bid { border-top-color: var(--acid); }
+    .ticket-ask { border-top-color: var(--ask); }
+    .receipt { border-top-color: var(--cream); margin-top: 1rem; }
+    .ticket-top, .receipt-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .ticket-bid .ticket-top { color: var(--acid); }
+    .ticket-ask .ticket-top { color: var(--ask); }
+    .receipt-top { color: var(--muted); }
+    .ticket h3, .receipt h3 {
+      font-family: var(--serif);
+      font-size: 2rem;
+      margin: 0.75rem 0 0.15rem;
+    }
+    .ticket-sub { margin: 0; font-size: 0.92rem; }
+    .ticket dl, .receipt dl {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem 1rem;
+      margin: 1.15rem 0 0;
+    }
+    .ticket dt, .receipt dt {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .ticket dd, .receipt dd {
+      margin: 0.2rem 0 0;
+      color: var(--cream);
+      font-family: var(--mono);
+      font-size: 0.95rem;
+    }
+
+    .faq-item { border-top: 1px solid var(--line); }
+    .faq-item:last-child { border-bottom: 1px solid var(--line); }
+    .faq-item h3 { margin: 0; font-size: 1.05rem; }
+    .faq-item button {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      text-align: left;
+      background: none;
+      border: 0;
+      color: var(--cream);
+      padding: 1.15rem 0;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 1.05rem;
+    }
+    .faq-item button:hover { color: var(--acid); }
+    .faq-item button::after {
+      content: "+";
+      font-family: var(--mono);
+      color: var(--acid);
+      font-weight: 400;
+    }
+    .faq-item button[aria-expanded="true"]::after { content: "–"; }
+    .faq-panel { padding: 0 0 1.15rem; max-width: 42rem; }
+    .faq-panel p { margin: 0; }
+
+    .access-panel {
+      display: grid;
+      gap: 2rem;
+      min-width: 0;
+      padding: 1.4rem;
+      background: var(--raised);
+      border: 1px solid var(--line);
+      border-top: 2px solid var(--acid);
+    }
+    .field-label {
+      display: block;
+      margin-bottom: 0.45rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .choice { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
+    .choice-opt {
+      border: 1px solid var(--line);
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .choice-opt:has(:checked) {
+      background: var(--cream);
+      color: var(--ink);
+      border-color: var(--cream);
+    }
+    .choice-opt:focus-within { outline: 2px solid var(--acid); outline-offset: 2px; }
+    .email-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: stretch; }
+    #waitlist input[type="email"] {
+      flex: 1 1 12rem;
+      min-width: 0;
+      width: auto;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--cream);
+      padding: 0.85rem 0.8rem;
+      border-radius: 2px;
+      font-size: 1rem;
+    }
+    #waitlist input[type="email"]::placeholder { color: var(--faint); }
+    #waitlist input[type="email"]:focus-visible {
+      outline: 2px solid var(--acid);
+      outline-offset: 2px;
+      border-color: var(--acid);
+    }
+    #waitlist input[type="email"]:user-invalid { border-color: var(--ask); }
+    #waitlist .email-row .btn { width: auto; margin: 0; }
+    @media (max-width: 640px) {
+      #waitlist .email-row { flex-direction: column; }
+      #waitlist .email-row .btn { width: 100%; }
+    }
+    .form-note { margin: 0.75rem 0 0; color: var(--faint); font-size: 0.85rem; }
+    .thanks h3 {
+      font-family: var(--serif);
+      font-size: 2.1rem;
+      margin: 0 0 0.6rem;
+    }
+    .thanks .btn { width: auto; margin-top: 1rem; }
+
+    .footer { border-top: 1px solid var(--line); padding: 2rem 0 2.6rem; }
+    .footer-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 2rem;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer nav { display: flex; flex-wrap: wrap; gap: 0.9rem 1.25rem; }
+    .footer a { color: var(--muted); text-decoration: none; }
+    .footer a:hover { color: var(--cream); }
+    .legal { margin: 1.1rem 0 0; color: var(--faint); font-size: 0.82rem; }
+
+    @media (min-width: 800px) {
+      .step { grid-template-columns: 4rem 12rem 1fr; align-items: baseline; gap: 1rem 2rem; }
+      .tickets { grid-template-columns: 1fr 1fr; }
+      .receipt dl { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (min-width: 900px) {
+      .split { grid-template-columns: 0.82fr 1.18fr; gap: 4rem; align-items: start; }
+      .sticky-head { position: sticky; top: 6rem; }
+      .access-panel { grid-template-columns: 1.05fr 0.95fr; gap: 3rem; padding: 2.4rem; align-items: center; }
+    }
+    @media (max-width: 700px) {
+      .section { padding: 4rem 0; }
+      .container { width: min(var(--max), calc(100% - 2rem)); }
+    }
+    @media (max-width: 420px) {
+      .logo .tld { display: none; }
+      .hero h1 { font-size: 2.7rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .dot, .tape-track, .level .bar, .prints li.new, .prints li.new-sell { animation: none; transition: none; }
+      .tape { overflow: visible; }
+      .tape-track, .tape-set { flex-wrap: wrap; width: auto; }
+      .tape-set + .tape-set { display: none; }
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col">
-    
-    <!-- Navigation -->
-    <nav class="w-full p-6 flex justify-between items-center border-b border-gray-800">
-        <div class="text-2xl font-bold text-white tracking-tight">LiquidCompute<span class="text-blue-500">.dev</span></div>
-        <a href="#waitlist" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md font-medium transition-colors">Early Access</a>
-    </nav>
+<body id="top">
+  <a class="skip" href="#content">Skip to content</a>
 
-    <!-- Hero Section -->
-    <main class="flex-grow flex flex-col items-center justify-center text-center px-4 py-20">
-        <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-6">
-            The Spot Market for <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Compute</span>
-        </h1>
-        <p class="text-xl md:text-2xl text-gray-400 max-w-2xl mb-12">
-            A real-time matching engine for hardware allocation. Trade H100 clusters, instances, and bare metal at pure market value.
-        </p>
+  <div class="banner">
+    <p>The opening book is forming. Buyers and providers can <a href="#waitlist">request a seat</a>.</p>
+  </div>
 
-        <!-- Mock Order Book Visual -->
-        <div class="bg-[#161b22] border border-gray-700 rounded-lg p-6 w-full max-w-md shadow-2xl mb-12 text-left mono text-sm">
-            <div class="flex justify-between text-gray-500 mb-2 pb-2 border-b border-gray-700">
-                <span>Price ($/hr)</span>
-                <span>Size (Nodes)</span>
+  <header class="site-header">
+    <div class="container nav-bar">
+      <a class="logo" href="#top">
+        <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="0" y="1" width="11" height="2" fill="#ff8b70"/>
+          <rect x="0" y="5" width="7" height="2" fill="#ff8b70"/>
+          <rect x="0" y="9" width="14" height="2" fill="#d6f25a"/>
+          <rect x="0" y="13" width="9" height="2" fill="#d6f25a"/>
+        </svg>
+        <span>LiquidCompute<span class="tld">.dev</span></span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#why">Why</a>
+        <a href="#how">Matching</a>
+        <a href="#instruments">Instruments</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-primary btn-small" href="#waitlist">Access</a>
+        <button type="button" class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="mobile-nav">Menu</button>
+      </div>
+    </div>
+    <div class="container" id="mobile-nav" hidden>
+      <a href="#why">Why</a>
+      <a href="#how">Matching</a>
+      <a href="#instruments">Instruments</a>
+      <a href="#faq">FAQ</a>
+    </div>
+  </header>
+
+  <main id="content">
+    <section class="hero">
+      <div class="container">
+        <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Pre-launch · Opening book</p>
+        <div class="hero-grid">
+          <h1>The spot market<br>for <em>compute</em>.</h1>
+          <p class="lede">Buyers bid for GPU clusters, instances, and bare metal. Providers post the capacity they can deliver. A matching engine crosses the two, and the price is whatever the book will bear.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#waitlist">Request access</a>
+            <a class="btn btn-ghost" href="#how">See matching</a>
+          </div>
+          <dl class="meta">
+            <div>
+              <dt>01</dt>
+              <dd>Clusters, instances, and bare metal in one book.</dd>
             </div>
-            <!-- Asks (Red) -->
-            <div class="text-red-400 flex justify-between mb-1"><span>2.450</span><span>8</span></div>
-            <div class="text-red-400 flex justify-between mb-1"><span>2.445</span><span>12</span></div>
-            <div class="text-red-400 flex justify-between mb-3"><span>2.440</span><span>4</span></div>
-            
-            <!-- Spread -->
-            <div class="text-white flex justify-between font-bold text-lg mb-3 border-y border-gray-700 py-2">
-                <span>2.435</span>
-                <span class="text-gray-500 text-xs self-center">SPREAD 0.005</span>
+            <div>
+              <dt>02</dt>
+              <dd>A visible price, not a private quote.</dd>
+            </div>
+            <div>
+              <dt>03</dt>
+              <dd>Windows measured in hours, not annual commits.</dd>
+            </div>
+          </dl>
+
+          <article class="book frame" id="sample-book" aria-label="Illustrative order book. Not a live market.">
+            <div class="book-top">
+              <div>
+                <div class="kicker-row">
+                  <p class="kicker">Sample book</p>
+                  <button type="button" class="pause" id="pause" aria-pressed="false">Pause</button>
+                </div>
+                <p class="contract-name" id="contract-name">H100 SXM</p>
+                <p class="shape" id="contract-shape">8-GPU HGX · US-East</p>
+              </div>
+              <div class="quote">
+                <svg class="spark" id="spark" viewBox="0 0 96 28" width="96" height="28" aria-hidden="true">
+                  <polyline id="spark-line" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="0,22 10,19 20,16 30,18 40,13 50,14 60,10 70,12 80,8 96,6"></polyline>
+                </svg>
+                <p class="last" id="last-price">2.435</p>
+                <p class="chg up" id="last-chg">+0.41%</p>
+              </div>
             </div>
 
-            <!-- Bids (Green) -->
-            <div class="text-green-400 flex justify-between mb-1"><span>2.435</span><span>16</span></div>
-            <div class="text-green-400 flex justify-between mb-1"><span>2.430</span><span>32</span></div>
-            <div class="text-green-400 flex justify-between"><span>2.425</span><span>8</span></div>
+            <div class="tabs" id="tabs" role="tablist" aria-label="Sample contracts">
+              <button type="button" role="tab" id="tab-h100" aria-selected="true" data-contract="h100">H100</button>
+              <button type="button" role="tab" id="tab-h200" aria-selected="false" data-contract="h200">H200</button>
+              <button type="button" role="tab" id="tab-b200" aria-selected="false" data-contract="b200">B200</button>
+              <button type="button" role="tab" id="tab-a100" aria-selected="false" data-contract="a100">A100</button>
+            </div>
+
+            <div class="cols"><span>Price · $/GPU-hr</span><span>GPUs</span></div>
+            <p class="side-label ask">Asks</p>
+            <div class="levels asks" id="asks">
+              <div class="level"><span class="bar" style="width:50%"></span><span class="px">2.450</span><span class="size">64</span></div>
+              <div class="level"><span class="bar" style="width:100%"></span><span class="px">2.445</span><span class="size">128</span></div>
+              <div class="level best"><span class="bar" style="width:25%"></span><span class="px">2.440</span><span class="size">32</span></div>
+            </div>
+            <div class="spread"><span id="spread-px">Spread 0.005</span></div>
+            <p class="side-label bid">Bids</p>
+            <div class="levels bids" id="bids">
+              <div class="level best"><span class="bar" style="width:60%"></span><span class="px">2.435</span><span class="size">96</span></div>
+              <div class="level"><span class="bar" style="width:100%"></span><span class="px">2.430</span><span class="size">160</span></div>
+              <div class="level"><span class="bar" style="width:30%"></span><span class="px">2.425</span><span class="size">48</span></div>
+            </div>
+
+            <div class="prints">
+              <p class="kicker">Prints · UTC</p>
+              <ol id="prints">
+                <li><span>14:02:11</span><span class="buy">Buy</span><span>32</span><span class="px">2.435</span></li>
+                <li><span>14:01:58</span><span class="sell">Sell</span><span>16</span><span class="px">2.440</span></li>
+                <li><span>14:01:40</span><span class="buy">Buy</span><span>64</span><span class="px">2.435</span></li>
+                <li><span>14:01:22</span><span class="sell">Sell</span><span>8</span><span class="px">2.445</span></li>
+              </ol>
+            </div>
+            <p class="fine">Illustrative prices for this preview. Not a live venue.</p>
+          </article>
         </div>
+      </div>
+    </section>
 
-        <!-- Waitlist Form -->
-        <div id="waitlist" class="w-full max-w-md">
-            <form class="flex gap-2" action="#" method="POST" onsubmit="alert('Waitlist joined!'); return false;">
-                <input type="email" placeholder="Enter your email to join the queue" required
-                    class="w-full px-4 py-3 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-md font-bold transition-colors">
-                    Submit
-                </button>
+    <div class="tape" aria-hidden="true">
+      <div class="tape-track">
+        <div class="tape-set">
+          <span><b>Illustrative mids</b></span>
+          <span><b>H100 SXM</b> 2.435 <i class="up">+0.41%</i></span>
+          <span><b>H200</b> 3.180 <i class="down">−0.12%</i></span>
+          <span><b>B200</b> 4.920 <i class="up">+1.05%</i></span>
+          <span><b>A100 80GB</b> 0.890 <i class="up">+0.22%</i></span>
+          <span><b>L40S</b> 0.640 <i class="down">−0.30%</i></span>
+          <span><b>CPU 192-core</b> 0.084 <i class="up">+0.08%</i></span>
+        </div>
+        <div class="tape-set">
+          <span><b>Illustrative mids</b></span>
+          <span><b>H100 SXM</b> 2.435 <i class="up">+0.41%</i></span>
+          <span><b>H200</b> 3.180 <i class="down">−0.12%</i></span>
+          <span><b>B200</b> 4.920 <i class="up">+1.05%</i></span>
+          <span><b>A100 80GB</b> 0.890 <i class="up">+0.22%</i></span>
+          <span><b>L40S</b> 0.640 <i class="down">−0.30%</i></span>
+          <span><b>CPU 192-core</b> 0.084 <i class="up">+0.08%</i></span>
+        </div>
+      </div>
+    </div>
+
+    <section class="section" id="why">
+      <div class="container">
+      <div class="split">
+        <div class="sticky-head">
+          <p class="kicker">01 — Why a market</p>
+          <h2>The rate card hides the market.</h2>
+          <p class="dek">Cloud menus were built for commits. A spot market is built for the hour a job actually needs.</p>
+        </div>
+        <div>
+          <article class="point">
+            <h3>Idle commits</h3>
+            <p>Reserved capacity is a forecast of the year. The GPUs idle this week were paid for anyway.</p>
+          </article>
+          <article class="point">
+            <h3>Queues instead of prices</h3>
+            <p>A fixed on-demand rate does not rise when a chip is scarce. The signal you get is a wait, or a region marked unavailable.</p>
+          </article>
+          <article class="point">
+            <h3>No public floor</h3>
+            <p>An operator with a quiet pod rarely gets to post a price the whole market can see. Spare machines wait on a private thread.</p>
+          </article>
+        </div>
+      </div>
+      <h3 class="table-title">A matched hour, beside a reserved commit.</h3>
+      <div class="table-wrap">
+        <table class="compare">
+          <caption class="sr-only">Reserved cloud compared with LiquidCompute</caption>
+          <thead>
+            <tr>
+              <th scope="col"> </th>
+              <th scope="col">Reserved cloud</th>
+              <th scope="col">LiquidCompute</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Commitment</th>
+              <td>A year, or a long reserved block</td>
+              <td>The window that cleared</td>
+            </tr>
+            <tr>
+              <th scope="row">Price</th>
+              <td>A rate card</td>
+              <td>The crossing price on the book</td>
+            </tr>
+            <tr>
+              <th scope="row">When chips are scarce</th>
+              <td>The region shows unavailable</td>
+              <td>The ask moves up</td>
+            </tr>
+            <tr>
+              <th scope="row">Spare racks</th>
+              <td>Already inside someone’s commit</td>
+              <td>Can rest in public, with a floor</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+    </section>
+
+    <section class="section band" id="how">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">02 — Matching</p>
+          <h2>From a resting order to an allocation.</h2>
+          <p class="dek">Three steps. Partial fills are a normal outcome.</p>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <p class="num">01</p>
+            <h3>Post</h3>
+            <p>You send a side, an instrument, a size, a limit, a region, and a window. If the order does not cross, it rests where the book can see it.</p>
+          </article>
+          <article class="step">
+            <p class="num">02</p>
+            <h3>Cross</h3>
+            <p>The engine matches orders on the same shape when the bid is at or above the ask. A 128-GPU bid can fill against several smaller asks.</p>
+          </article>
+          <article class="step">
+            <p class="num">03</p>
+            <h3>Allocate</h3>
+            <p>Both sides receive the same record: what cleared, at what price, for which hour, in which region. Size that did not cross stays resting.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="instruments">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">03 — Instruments</p>
+          <h2>Hardware, named precisely.</h2>
+          <p class="dek">A contract is a chip, a count, a region, a fabric, and a window. An instance and a bare-metal host can both rest in the book when those terms are explicit.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="instruments">
+            <caption class="sr-only">Opening set of instruments</caption>
+            <thead>
+              <tr>
+                <th scope="col">Instrument</th>
+                <th scope="col">Shape</th>
+                <th scope="col">Quote</th>
+                <th scope="col">Used for</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">H100 SXM 80GB</th>
+                <td>8–256 GPUs</td>
+                <td>$/GPU-hr</td>
+                <td>Training runs and long fine-tunes</td>
+              </tr>
+              <tr>
+                <th scope="row">H200</th>
+                <td>8–256 GPUs</td>
+                <td>$/GPU-hr</td>
+                <td>Larger memory, long context</td>
+              </tr>
+              <tr>
+                <th scope="row">B200</th>
+                <td>8–128 GPUs</td>
+                <td>$/GPU-hr</td>
+                <td>Dense training where the chip is the constraint</td>
+              </tr>
+              <tr>
+                <th scope="row">A100 80GB</th>
+                <td>8–128 GPUs</td>
+                <td>$/GPU-hr</td>
+                <td>Smaller runs and serving</td>
+              </tr>
+              <tr>
+                <th scope="row">L40S</th>
+                <td>1–32 GPUs</td>
+                <td>$/GPU-hr</td>
+                <td>Inference and lighter training</td>
+              </tr>
+              <tr>
+                <th scope="row">CPU bare metal</th>
+                <td>96 or 192 cores</td>
+                <td>$/host-hr</td>
+                <td>Tokenization, data prep, and the work around a job</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">Cluster orders can require NVLink inside the node and InfiniBand or RoCE between nodes. A named fabric is part of the order. Opening regions: US-East, US-Central, EU-West, and AP-South.</p>
+      </div>
+    </section>
+
+    <section class="section band" id="sides">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">04 — Orders</p>
+          <h2>Resting orders, then a fill.</h2>
+          <p class="dek">Nothing is allocated by a listing alone. A bid rests, an ask rests, and hardware moves only when they cross.</p>
+        </div>
+        <div class="tickets">
+          <article class="ticket ticket-bid">
+            <div class="ticket-top"><span>Bid</span><span>Resting</span></div>
+            <h3>H100 SXM</h3>
+            <p class="ticket-sub">US-East · NVLink node</p>
+            <dl>
+              <div><dt>Limit</dt><dd>2.435</dd></div>
+              <div><dt>Size</dt><dd>32 GPUs</dd></div>
+              <div><dt>Window</dt><dd>1 hour</dd></div>
+              <div><dt>Touch</dt><dd>At the best bid</dd></div>
+            </dl>
+          </article>
+          <article class="ticket ticket-ask">
+            <div class="ticket-top"><span>Ask</span><span>Resting</span></div>
+            <h3>H100 SXM</h3>
+            <p class="ticket-sub">US-East · NVLink node</p>
+            <dl>
+              <div><dt>Floor</dt><dd>2.450</dd></div>
+              <div><dt>Size</dt><dd>64 GPUs</dd></div>
+              <div><dt>Window</dt><dd>1 hour</dd></div>
+              <div><dt>Touch</dt><dd>Above the best ask</dd></div>
+            </dl>
+          </article>
+        </div>
+        <article class="receipt">
+          <div class="receipt-top"><span>Fill record</span><span>Printed</span></div>
+          <h3>What both sides see</h3>
+          <p class="ticket-sub">A sample print from the H100 book. Same record on each side.</p>
+          <dl>
+            <div><dt>Instrument</dt><dd>H100 SXM</dd></div>
+            <div><dt>Size</dt><dd>96 GPUs</dd></div>
+            <div><dt>Window</dt><dd>1 hour · US-East</dd></div>
+            <div><dt>Price</dt><dd>2.435 $/GPU-hr</dd></div>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">05 — Questions</p>
+          <h2>Before you request a seat.</h2>
+        </div>
+        <div class="faq-list">
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="true" aria-controls="faq-1">Is LiquidCompute a cloud?</button></h3>
+            <div class="faq-panel" id="faq-1">
+              <p>It is a venue. Providers list machines they operate. Buyers bid for a shape. When an order crosses, both sides get the same allocation record. You keep your own orchestration, image, and scheduler.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-2">How is the price set?</button></h3>
+            <div class="faq-panel" id="faq-2" hidden>
+              <p>By the book. A bid and an ask cross when the shape matches and the bid is at or above the ask. The fill prints at that crossing price. There is no second rate card behind the book.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-3">What can be listed?</button></h3>
+            <div class="faq-panel" id="faq-3" hidden>
+              <p>GPU clusters and smaller slices, plus CPU bare metal for the work around a training job. A listing names the hardware, the interconnect, the region, and the hours the machines are actually available.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-4">What does a provider still control?</button></h3>
+            <div class="faq-panel" id="faq-4" hidden>
+              <p>The floor, the size, the region, and the window. Unfilled size stays resting. Capacity that was not posted is not allocated.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-5">What is a fill?</button></h3>
+            <div class="faq-panel" id="faq-5" hidden>
+              <p>The record of a cross: instrument, size, price, region, and window. A large bid can complete against several asks. Anything that does not cross remains in the book.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-6">Who should request access?</button></h3>
+            <div class="faq-panel" id="faq-6" hidden>
+              <p>Teams that buy bursts of GPU time, and operators with capacity that is not fully sold. Say which side you are on. Seats open in small cohorts.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="waitlist">
+      <div class="container">
+        <div class="access-panel">
+          <div>
+            <p class="kicker">Early access</p>
+            <h2 id="access-title">Request a seat.</h2>
+            <p class="dek">Tell us whether you buy compute, supply it, or both. The opening book is filled in small cohorts.</p>
+          </div>
+          <div>
+            <form id="waitlist-form" action="#" method="post" aria-labelledby="access-title">
+              <p class="field-label" id="side-label">Side of the market</p>
+              <div class="choice" role="radiogroup" aria-labelledby="side-label">
+                <label class="choice-opt"><input class="sr-only" type="radio" name="side" value="buy" checked> Buy</label>
+                <label class="choice-opt"><input class="sr-only" type="radio" name="side" value="supply"> Supply</label>
+                <label class="choice-opt"><input class="sr-only" type="radio" name="side" value="both"> Both</label>
+              </div>
+              <label class="field-label" for="email">Email</label>
+              <div class="email-row">
+                <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com" required>
+                <button class="btn btn-primary" type="submit">Request access</button>
+              </div>
+              <p class="form-note">One note when your cohort opens. No newsletter.</p>
             </form>
+            <div class="thanks" id="thanks" hidden role="status">
+              <p class="kicker">Waitlist</p>
+              <h3 tabindex="-1" id="thanks-title">You’re on the list.</h3>
+              <p id="thanks-copy"></p>
+              <button type="button" class="btn btn-ghost" id="again">Submit another</button>
+            </div>
+          </div>
         </div>
-    </main>
+      </div>
+    </section>
+  </main>
 
-    <!-- Footer -->
-    <footer class="w-full p-6 text-center text-gray-600 text-sm border-t border-gray-800">
-        &copy; 2026 LiquidCompute. Built for high-frequency resource allocation.
-    </footer>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-row">
+        <a class="logo" href="#top">
+          <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true">
+            <rect x="0" y="1" width="11" height="2" fill="#ff8b70"/>
+            <rect x="0" y="5" width="7" height="2" fill="#ff8b70"/>
+            <rect x="0" y="9" width="14" height="2" fill="#d6f25a"/>
+            <rect x="0" y="13" width="9" height="2" fill="#d6f25a"/>
+          </svg>
+          <span>LiquidCompute<span class="tld">.dev</span></span>
+        </a>
+        <nav aria-label="Footer">
+          <a href="#why">Why</a>
+          <a href="#how">Matching</a>
+          <a href="#instruments">Instruments</a>
+          <a href="#faq">FAQ</a>
+          <a href="#waitlist">Access</a>
+        </nav>
+      </div>
+      <p class="legal">© 2026 LiquidCompute. Sample prices on this page are illustrative and are not live quotes.</p>
+    </div>
+  </footer>
 
+  <script>
+    const SEED = {
+      h100: {
+        name: "H100 SXM",
+        shape: "8-GPU HGX · US-East",
+        change: 0.41,
+        asks: [[2.45, 64], [2.445, 128], [2.44, 32]],
+        bids: [[2.435, 96], [2.43, 160], [2.425, 48]],
+        prints: [
+          { t: "14:02:11", side: "Buy", size: 32, price: 2.435 },
+          { t: "14:01:58", side: "Sell", size: 16, price: 2.44 },
+          { t: "14:01:40", side: "Buy", size: 64, price: 2.435 },
+          { t: "14:01:22", side: "Sell", size: 8, price: 2.445 }
+        ]
+      },
+      h200: {
+        name: "H200",
+        shape: "8-GPU HGX · US-Central",
+        change: -0.12,
+        asks: [[3.195, 32], [3.19, 64], [3.185, 16]],
+        bids: [[3.18, 48], [3.175, 80], [3.17, 24]],
+        prints: [
+          { t: "13:58:02", side: "Sell", size: 16, price: 3.185 },
+          { t: "13:57:41", side: "Buy", size: 8, price: 3.18 },
+          { t: "13:57:11", side: "Buy", size: 32, price: 3.18 },
+          { t: "13:56:44", side: "Sell", size: 24, price: 3.19 }
+        ]
+      },
+      b200: {
+        name: "B200",
+        shape: "8-GPU HGX · EU-West",
+        change: 1.05,
+        asks: [[4.935, 16], [4.93, 24], [4.925, 8]],
+        bids: [[4.92, 16], [4.915, 32], [4.91, 8]],
+        prints: [
+          { t: "13:41:18", side: "Buy", size: 8, price: 4.92 },
+          { t: "13:40:02", side: "Sell", size: 8, price: 4.925 },
+          { t: "13:38:47", side: "Buy", size: 16, price: 4.92 },
+          { t: "13:36:10", side: "Sell", size: 8, price: 4.93 }
+        ]
+      },
+      a100: {
+        name: "A100 80GB",
+        shape: "8-GPU · AP-South",
+        change: 0.22,
+        asks: [[0.905, 64], [0.9, 96], [0.895, 32]],
+        bids: [[0.89, 128], [0.885, 64], [0.88, 48]],
+        prints: [
+          { t: "12:16:33", side: "Buy", size: 32, price: 0.89 },
+          { t: "12:15:58", side: "Buy", size: 16, price: 0.89 },
+          { t: "12:14:21", side: "Sell", size: 48, price: 0.895 },
+          { t: "12:13:04", side: "Sell", size: 16, price: 0.9 }
+        ]
+      }
+    };
+
+    let state = null;
+    let timer = 0;
+    let paused = false;
+    let justPrinted = "";
+
+    function hydrate(id) {
+      const next = structuredClone(SEED[id]);
+      next.id = id;
+      next.last = next.prints[0].price;
+      const mid = next.bids[0][0];
+      next.series = Array.from({ length: 28 }, (_, i) => mid + Math.sin(i / 2.5) * mid * 0.004);
+      next.series[27] = next.last;
+      return next;
+    }
+
+    function formatChange(n) {
+      const sign = n > 0 ? "+" : "";
+      return sign + n.toFixed(2) + "%";
+    }
+
+    function sparkPoints(values) {
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const span = max - min || 1;
+      return values.map((v, i) => {
+        const x = (i / (values.length - 1)) * 96;
+        const y = 26 - ((v - min) / span) * 22;
+        return x.toFixed(1) + "," + y.toFixed(1);
+      }).join(" ");
+    }
+
+    function renderLevels(el, levels, side) {
+      const max = Math.max(...levels.map((level) => level[1]));
+      el.replaceChildren();
+      levels.forEach((level, index) => {
+        const best = side === "ask" ? index === levels.length - 1 : index === 0;
+        const row = document.createElement("div");
+        row.className = best ? "level best" : "level";
+        const bar = document.createElement("span");
+        bar.className = "bar";
+        bar.style.width = (level[1] / max) * 100 + "%";
+        const px = document.createElement("span");
+        px.className = "px";
+        px.textContent = level[0].toFixed(3);
+        const size = document.createElement("span");
+        size.className = "size";
+        size.textContent = String(level[1]);
+        row.append(bar, px, size);
+        el.append(row);
+      });
+    }
+
+    function render() {
+      document.getElementById("contract-name").textContent = state.name;
+      document.getElementById("contract-shape").textContent = state.shape;
+      document.getElementById("last-price").textContent = state.last.toFixed(3);
+      const chg = document.getElementById("last-chg");
+      chg.textContent = formatChange(state.change);
+      chg.className = "chg " + (state.change < 0 ? "down" : "up");
+      const spark = document.getElementById("spark");
+      spark.classList.toggle("down", state.change < 0);
+      document.getElementById("spark-line").setAttribute("points", sparkPoints(state.series));
+      renderLevels(document.getElementById("asks"), state.asks, "ask");
+      renderLevels(document.getElementById("bids"), state.bids, "bid");
+      const bestAsk = state.asks[state.asks.length - 1][0];
+      const bestBid = state.bids[0][0];
+      document.getElementById("spread-px").textContent = "Spread " + (bestAsk - bestBid).toFixed(3);
+
+      const list = document.getElementById("prints");
+      list.replaceChildren();
+      state.prints.forEach((print, index) => {
+        const li = document.createElement("li");
+        if (index === 0 && justPrinted) li.className = justPrinted === "Sell" ? "new-sell" : "new";
+        const time = document.createElement("span");
+        time.textContent = print.t;
+        const side = document.createElement("span");
+        side.textContent = print.side;
+        side.className = print.side === "Buy" ? "buy" : "sell";
+        const size = document.createElement("span");
+        size.textContent = String(print.size);
+        const px = document.createElement("span");
+        px.className = "px";
+        px.textContent = print.price.toFixed(3);
+        li.append(time, side, size, px);
+        list.append(li);
+      });
+      justPrinted = "";
+
+      document.querySelectorAll("#tabs button").forEach((button) => {
+        const on = button.dataset.contract === state.id;
+        button.setAttribute("aria-selected", String(on));
+      });
+    }
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function tick() {
+      const pool = Math.random() < 0.5 ? state.asks : state.bids;
+      const row = pool[Math.floor(Math.random() * pool.length)];
+      row[1] = clamp(row[1] + (Math.random() < 0.5 ? -8 : 8), 8, 256);
+
+      if (Math.random() < 0.6) {
+        const isBuy = Math.random() < 0.5;
+        const level = isBuy ? state.bids[0] : state.asks[state.asks.length - 1];
+        if (level[1] < 24) level[1] = clamp(level[1] + 32, 8, 256);
+        const lot = [8, 16, 32][Math.floor(Math.random() * 3)];
+        const size = Math.min(level[1] - 8, lot);
+        if (size >= 8) {
+          level[1] -= size;
+          state.prints.unshift({
+            t: new Date().toISOString().slice(11, 19),
+            side: isBuy ? "Buy" : "Sell",
+            size,
+            price: level[0]
+          });
+          state.prints.length = 4;
+          state.last = level[0];
+          justPrinted = isBuy ? "Buy" : "Sell";
+        }
+      }
+
+      state.change = clamp(Math.round((state.change + (Math.random() - 0.48) * 0.05) * 100) / 100, -2.5, 2.5);
+      state.series.push(state.last + (Math.random() - 0.5) * state.last * 0.0012);
+      if (state.series.length > 28) state.series.shift();
+      render();
+    }
+
+    function start() {
+      if (timer || paused) return;
+      timer = window.setInterval(tick, 1500);
+    }
+
+    function stop() {
+      window.clearInterval(timer);
+      timer = 0;
+    }
+
+    const pauseBtn = document.getElementById("pause");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    state = hydrate("h100");
+    render();
+    if (reduceMotion) {
+      paused = true;
+      pauseBtn.textContent = "Play";
+      pauseBtn.setAttribute("aria-pressed", "true");
+    } else {
+      start();
+    }
+
+    pauseBtn.addEventListener("click", () => {
+      paused = !paused;
+      pauseBtn.setAttribute("aria-pressed", String(paused));
+      pauseBtn.textContent = paused ? "Resume" : "Pause";
+      if (paused) stop();
+      else start();
+    });
+
+    document.getElementById("tabs").addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      state = hydrate(button.dataset.contract);
+      justPrinted = "";
+      render();
+    });
+
+    document.getElementById("tabs").addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+      const buttons = [...document.querySelectorAll("#tabs button")];
+      const index = buttons.indexOf(document.activeElement);
+      if (index < 0) return;
+      event.preventDefault();
+      const next = buttons[(index + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length];
+      next.focus();
+      next.click();
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stop();
+      else if (!paused) start();
+    });
+
+    document.getElementById("faq").addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button || !button.hasAttribute("aria-controls")) return;
+      const open = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!open));
+      document.getElementById(button.getAttribute("aria-controls")).hidden = open;
+    });
+
+    const menuBtn = document.getElementById("menu-btn");
+    const mobileNav = document.getElementById("mobile-nav");
+    function setMenu(open) {
+      menuBtn.setAttribute("aria-expanded", String(open));
+      menuBtn.textContent = open ? "Close" : "Menu";
+      mobileNav.hidden = !open;
+    }
+    menuBtn.addEventListener("click", () => setMenu(menuBtn.getAttribute("aria-expanded") !== "true"));
+    mobileNav.addEventListener("click", (event) => {
+      if (event.target.closest("a")) setMenu(false);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setMenu(false);
+    });
+
+    const form = document.getElementById("waitlist-form");
+    const thanks = document.getElementById("thanks");
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const email = String(data.get("email") || "");
+      const side = String(data.get("side") || "buy");
+      const labels = {
+        buy: "buying compute",
+        supply: "supplying capacity",
+        both: "buying and supplying"
+      };
+      document.getElementById("thanks-copy").textContent =
+        email + " is on the list for " + labels[side] + ". We’ll write when that cohort opens.";
+      form.hidden = true;
+      thanks.hidden = false;
+      document.getElementById("thanks-title").focus();
+    });
+    document.getElementById("again").addEventListener("click", () => {
+      form.reset();
+      form.hidden = false;
+      thanks.hidden = true;
+      document.getElementById("email").focus();
+    });
+  </script>
 </body>
 </html>
